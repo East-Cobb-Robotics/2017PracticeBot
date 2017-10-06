@@ -18,6 +18,7 @@ import org.usfirst.frc.team4910.util.CrashTracker;
 import org.usfirst.frc.team4910.util.GyroHelper;
 import org.usfirst.frc.team4910.util.Path;
 import org.usfirst.frc.team4910.util.Path.PathType;
+import org.usfirst.frc.team4910.util.Peg;
 
 import com.opencsv.CSVWriter;
 
@@ -40,6 +41,7 @@ public class Robot extends IterativeRobot {
 	Thread visionThread;
 	Iterator iteratorEnabled = new Iterator();
 	Iterator iteratorDisabled = new Iterator();
+	public static Jetson jetson;
 	public static DriveTrain drive;
 	public static Shooter sh;
 	static Elevator elev;
@@ -64,6 +66,8 @@ public class Robot extends IterativeRobot {
         	vision = VisionProcessor.getInstance();
         	climb = Climber.getInstance();
         	pat = new Path();
+        	jetson = new Jetson();
+        	jetson.startZMQ();
         	CrashTracker.logRobotInit();
         	iteratorEnabled.register(RobotState.iter);
         	iteratorEnabled.register(drive.getLoop());
@@ -78,7 +82,7 @@ public class Robot extends IterativeRobot {
         	
     		autoChoose = new SendableChooser<String>();
     		autoChoose.addObject("POSITION CHOOSER", "0");
-    		autoChoose.addDefault("Do Nothing", "Do Nothing");
+    		autoChoose.addDefault("JetsonTest","JetsonTest");
     		autoChoose.addObject("Red Left", "Red Left");
     		autoChoose.addObject("Red Middle", "Red Middle");
     		autoChoose.addObject("Red Right", "Red Right");
@@ -144,8 +148,16 @@ public class Robot extends IterativeRobot {
         	//double initDist= RobotMap.isCompBot ? 80 : 94.5;
         	double initDist= RobotMap.isCompBot ? 88.0 : 82;
         	switch((String)autoChoose.getSelected()){
-        	case "Do Nothing":
-        		nothing=true;
+        	case "JetsonTest":
+        		RobotMap.gates.set(DoubleSolenoid.Value.kForward); 
+        		Peg.PegLoc loc;
+        		
+        		for(int i = 0; i < 10; i++) {
+        			loc = jetson.receave(); // Get the peg Location from the Jetson
+        			System.out.println("Peg X Location: " + loc.getPegX());
+        			System.out.println("Peg Y Location: " + loc.getPegY());
+        			nothing=true;
+        		}
         		break;
         	case "Red Left":
         		visionAlternateAlternate(-initialTurnAngleLeft);
