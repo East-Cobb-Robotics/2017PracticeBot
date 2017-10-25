@@ -36,7 +36,7 @@ public class Jetson
 		byte[] message;
 
 		System.out.println("Starting recv");
-		message = sub.recv();
+		message = sub.recv(ZMQ.NOBLOCK);
 		try {
 			loc = Peg.PegLoc.parseFrom(message);
 		} catch (Exception e) {

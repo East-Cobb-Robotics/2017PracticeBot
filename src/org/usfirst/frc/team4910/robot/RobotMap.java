@@ -42,10 +42,10 @@ public class RobotMap {
 	public static final double rightMaxIPSPS=982.7519404608955;
 	
 	//Position, velocity, and gyro PIDF values are all for high gear only
-	public static final double PositionKp=isCompBot ? 0.036 :0.034; //0.0125
-	public static final double PositionKi=0.0;//0.0002; 
-	public static final double PositionKd=0.0; //0.04
-	public static final double PositionKf=0.0;
+	public static double PositionKp=0.036; //0.0125
+	public static double PositionKi=0.0;//0.0002; 
+	public static double PositionKd=0.0; //0.04
+	public static double PositionKf=0.0;
 	public static final double VelocityKp=.0006; //Unused valuess
 	public static final double VelocityKi=0.00026;
 	public static final double VelocityKd=0.0;

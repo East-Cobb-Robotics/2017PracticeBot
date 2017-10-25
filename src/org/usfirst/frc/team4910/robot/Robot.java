@@ -66,8 +66,8 @@ public class Robot extends IterativeRobot {
         	vision = VisionProcessor.getInstance();
         	climb = Climber.getInstance();
         	pat = new Path();
-        	jetson = new Jetson();
-        	jetson.startZMQ();
+        	//jetson = new Jetson();
+        	//jetson.startZMQ();
         	CrashTracker.logRobotInit();
         	iteratorEnabled.register(RobotState.iter);
         	iteratorEnabled.register(drive.getLoop());
@@ -95,6 +95,9 @@ public class Robot extends IterativeRobot {
     		gearAutoChoose.addDefault("Keep gates closed in auto", "Keep gates closed in auto");
     		SmartDashboard.putData("Auto mode", autoChoose);
     		SmartDashboard.putData("Gates in auto chooser", gearAutoChoose);
+    		SmartDashboard.putNumber("kP", RobotMap.PositionKp);
+    		SmartDashboard.putNumber("kI", RobotMap.PositionKi);
+    		SmartDashboard.putNumber("kD", RobotMap.PositionKd);
     		System.out.println("Robot Init time: "+(Timer.getFPGATimestamp()-initTime));
         	//RobotMap.g.calibrate();
         	
@@ -149,15 +152,22 @@ public class Robot extends IterativeRobot {
         	double initDist= RobotMap.isCompBot ? 88.0 : 82;
         	switch((String)autoChoose.getSelected()){
         	case "JetsonTest":
-        		RobotMap.gates.set(DoubleSolenoid.Value.kForward); 
-        		Peg.PegLoc loc;
-        		
+        		RobotMap.PositionKp = SmartDashboard.getNumber("kP", RobotMap.PositionKp);
+        		RobotMap.PositionKi = SmartDashboard.getNumber("kI", RobotMap.PositionKi);
+        		RobotMap.PositionKd = SmartDashboard.getNumber("kD", RobotMap.PositionKd);
+        		//turnToPeg();
+        		pat.setPositionTimeThresh(5);
         		for(int i = 0; i < 10; i++) {
-        			loc = jetson.receave(); // Get the peg Location from the Jetson
-        			System.out.println("Peg X Location: " + loc.getPegX());
-        			System.out.println("Peg Y Location: " + loc.getPegY());
-        			nothing=true;
+        			pat.register(Path.PathType.Position, 60);
+        			pat.Iterate();
+        			Timer.delay(3.5);
+        			pat.register(Path.PathType.Position,-60);
+        			pat.Iterate();
+        			Timer.delay(3.5);
+        			pat.reset();
         		}
+        		nothing=true;
+
         		break;
         	case "Red Left":
         		visionAlternateAlternate(-initialTurnAngleLeft);
@@ -1007,6 +1017,34 @@ public class Robot extends IterativeRobot {
 		pat.register(PathType.Position, -7.5-ult); //was -12
 		pat.Iterate();
     	
+    }
+    
+    private void turnToPeg() {
+    	int FOV = 60;
+    	int Res = 640;
+    	int center = Res/2;
+    	int from_center;
+    	
+    	
+    	int degrees_per_pix = Res/FOV;
+    	
+    	Peg.PegLoc Loc;
+    	
+    	Loc = jetson.receave();
+    	
+    	if(Loc.getPegX() < center) {
+    		from_center = center - Loc.getPegX();
+    	} else if(Loc.getPegX() > center) {
+    		from_center = Loc.getPegX() - center;
+    	} else {
+    		from_center = 0;
+    	}
+    	
+    	int turn = from_center * degrees_per_pix;
+    	System.out.println("Turning: " + turn);
+    	pat.setPositionTimeThresh(5);
+    	pat.register(Path.PathType.Heading, turn);
+    	pat.Iterate();
     }
     
 }
